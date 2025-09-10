@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: whale-web-app
+spec:
+  gateways:
+  - kubeflow-gateway
+  hosts:
+  - '*'
+  http:
+  - headers:
+      request:
+        add:
+          x-forwarded-prefix: /whl
+    match: # 修正: OKD 測試發現的設定問題, 多一個 `-` 導致 service 路徑不生效
+    - uri:
+        prefix: /whl
+    rewrite:
+      uri: /  # 在 forward 前，改變 uri
+    route:
+    - destination:
+        host: whale-web-app-service.kubeflow.svc.cluster.local
+        port:
+          number: 80
+    timeout: 300s

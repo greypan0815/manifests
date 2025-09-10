@@ -1,0 +1,47 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: data-studio-admin-rolebinding-kfadmin
+  namespace: kubeflow
+  labels:
+    dataStudio: admin
+subjects:
+- kind: User
+  name: kfadmin
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: data-studio-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: image-builder-rolebinding-kfadmin
+  namespace: kubeflow
+  labels:
+    dataStudio: admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:image-builder
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: kfadmin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    dataStudio: admin
+  name: admin-rolebinding-kfadmin
+  namespace: kubeflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: kfadmin

@@ -1,0 +1,143 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+- includeSelectors: true
+  pairs:
+    DataStudio.version: "0.9"
+
+resources:
+  # 1. 核心資源部署
+  # Add Kubeflow namespace
+  - ../../common/kubeflow-namespace/base
+
+  # 2. OpenShift 特定組件
+  # 安全上下文約束 (SCC) 配置，為 Istio 服務配置權限
+  - ../../openshift/openshiftstack/application/openshift/openshift-scc/overlays/istio
+  # Cert Manager 1.5 版本（證書管理）
+  - ../../openshift/openshiftstack/application/cert-manager-1.5
+  # Profiles Resources（用戶配置文件資源）
+  - ../../openshift/openshiftstack/application/profiles-resources/base
+  # KFP-Tekton 多用戶組件（管道引擎）
+  - ../../openshift/openshiftstack/application/kfp-tekton-multiuser/base
+  # Jupyter Web App（筆記本界面）
+  - ../../openshift/openshiftstack/application/jupyter-web-app/base
+  # Notebook Controller（筆記本管理）
+  - ../../openshift/openshiftstack/application/notebook-controller/base
+  # Volumes Web App（存儲卷管理）
+  - ../../openshift/openshiftstack/application/volumes-web-app/base
+  # Training Operator（訓練作業控制器）
+  - ../../openshift/openshiftstack/application/training-operator/base
+  # KServe（模型服務）
+  - ../../openshift/openshiftstack/application/kserve/base
+
+  # 自行複製的 OpenShift Stack 組件
+  - ./openshiftstack
+
+  # 3. Dex 認證系統（身份提供者）
+  - ./dex/base
+  # OAuth client
+  # - ./oauth-client/base
+
+  # OIDC 授權服務（OAuth 客戶端授權）
+  # OIDC service
+  - ./oidc-authservice/base
+
+  # 4. 服務網格和無服務器框架
+  # Istio 1.16（服務網格，使用 CNI 覆蓋）
+  # copy from ../../openshift/openshiftstack/application/istio-1-14-OpenShift
+  - ./openshiftstack/application/istio-1-16-OpenShift/overlays/cni
+  # Knative（無服務器框架，與 Istio 集成）
+  # copy from ../../openshift/openshiftstack/application/knative/overlays/istio
+  - ./openshiftstack/application/knative/overlays/istio
+
+  # 5.自定義服務配置
+  # 替換 Jupyter Web App 的筆記本模板
+  # Replace jupyter-web-app-deployment's notebook_template.yaml
+  - ./jupyter-web-app
+  # 為 tekton-pipelines 命名空間中的服務賬戶添加權限
+  # Add permission for service account in tekton-pipelines namespace #4987
+  - ./kfp-tekton/base
+  # 添加 MinIO 路由（對象存儲）
+  # Add MinIO route
+  - ./kfp-tekton/minio
+
+# 補丁主要功能：
+# 提高 Training Operator 記憶體到 100M 避免 OOMKilled
+# 增加 livenessProbe 初始延遲時間從 15 秒到 25 秒
+# 修復多個 TLS 錯誤和連接問題（ml-pipeline-ui、ml-pipeline、jupyter-web-app、volumes-web-app）
+# 禁用 kubeflow 和 knative-serving 命名空間的 istio-injection
+# 調整 Jupyter Web App 部署配置
+# 解決 hostPath 卷權限問題
+# 移除 Katib 選單項目
+# 修復安全上下文約束（SCC）問題，添加適當的服務帳戶
+# 為 Training Operator 添加 paddlejobs 資源權限
+patches:
+  # OOMkilled training-operator Solved: increase memory to 100M
+  # increase ivenessProbe/initialDelaySeconds from 15 to 25 to avoid Liveness probe failed
+  - target:
+      kind: Deployment
+      name: training-operator
+    path: ./patches/deployment_training-operator.yaml
+
+  # To Solve: upstream connect error or disconnect/reset before headers. reset reason: connection failure, transport failure reason: TLS error: 268435703:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER
+  - target:
+      kind: DestinationRule
+      name: ml-pipeline-ui
+    path: ./patches/destination_rule_ml-pipeline-ui.yaml
+
+  - target:
+      kind: DestinationRule
+      name: ml-pipeline
+    path: ./patches/destination_rule_ml-pipeline.yaml
+
+  - target:
+      kind: DestinationRule
+      name: jupyter-web-app
+    path: ./patches/destination_rule_jupyter-web-app.yaml
+
+  - target:
+      kind: DestinationRule
+      name: volumes-web-app
+    path: ./patches/destination_rule_volumes-web-app.yaml
+
+  # disable istio-injection
+  - target:
+      kind: Namespace
+      name: kubeflow
+    path: ./patches/namespace_kubeflow.yaml
+
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: jupyter-web-app-deployment
+    path: ./patches/deployment_jupyter-web-app.yaml
+
+  # disable istio-injection
+  - target:
+      kind: Namespace
+      name: knative-serving
+    path: ./patches/namespace_knative-serving.yaml
+
+patchesStrategicMerge:
+  # To Solve: 
+  # Invalid value: "hostPath": hostPath volumes are not allowed to be used
+  - ./patches/daemonset_kfp-csi-s3.yaml
+
+  # remove menu item of katib
+  - ./patches/configmap_centraldashboard-config.yaml
+
+  # fix bug: for scc tekton-anyuid-kubeflow, kubeflow-privileged-istio
+  # add service account kfp-csi-attacher, kfp-csi-provisioner rather than csi-attacher, csi-provisioner
+  - ./patches/scc_tekton-anyuid-kubeflow.yaml
+  - ./patches/scc_kubeflow-privileged-istio.yaml
+
+  # fix bug: add paddlejobs resource in clusterrole training-operator
+  - ./patches/clusterrole_training-operator.yaml
+
+# change central dashboard to DataStudio UI
+images:
+- name: docker.io/kubeflownotebookswg/centraldashboard
+  newName: 404906229455.dkr.ecr.ap-northeast-1.amazonaws.com/data-studio/centraldashboard
+  newTag: 22bf39f

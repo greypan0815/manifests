@@ -1,0 +1,12 @@
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts/-
+  value:
+    name: notebook-template-volume
+    mountPath: /src/apps/common/yaml/notebook_template.yaml
+    subPath: notebook_template.yaml
+- op: add
+  path: /spec/template/spec/volumes/-
+  value:
+    name: notebook-template-volume
+    configMap:
+      name: datastudio-notebook-template

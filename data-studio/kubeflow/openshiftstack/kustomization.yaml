@@ -1,0 +1,74 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+# 部署 Kubeflow 所需的基本角色和權限
+#Kubeflow roles
+  - ../../../common/kubeflow-roles/base
+
+# This is here because it needs to install in namespace kubeflow
+# Copy from ../../../openshift/openshiftstack/application/istio-1-14-OpenShift/base/network-attachment.yaml
+# 在 kubeflow 命名空間中安裝網絡配置
+# 從 OpenShift Istio 1.14 應用複製而來
+  - network-attachment.yaml
+
+#Added custom centraldashboard to remove tensorboard
+# 已修改移除 TensorBoard 功能的中央儀表板版本
+  - ../../../openshift/openshiftstack/application/centraldashboard/base
+
+#Cluster issuer
+# Copy from ../../../openshift/openshiftstack/application/cert-manager-1.5/cluster-issuer-nm.yaml
+# 為證書管理配置集群級別的簽發者
+# 從 cert-manager-1.5 應用複製而來
+  - cluster-issuer-nm.yaml
+
+#Admission webhooks
+# 處理 Kubeflow 組件的准入控制
+# 使用 cert-manager 覆蓋層
+  - ../../../apps/admission-webhook/upstream/overlays/cert-manager
+
+#profiles is here since namespace was not being replaced for the virtual service and pipeline depends on it
+# 配置用戶配置文件服務
+# 註解顯示這是因為命名空間未被正確替換，且管道依賴於此
+  - ../../../apps/profiles/upstream/overlays/kubeflow
+
+#Virtual Service for pipeline, has to be here after the gateway is created
+  # - application/pipeline-agnostic/virtual-service.yaml
+  # - application/pipeline-agnostic/metadata-gprc.yaml
+
+#Create defualt user
+# 設置系統默認用戶
+  - ../../../common/user-namespace/base
+
+# PipelineRun cannot create TaskRun
+# [spec.volumes[14]: Invalid value: "hostPath": hostPath volumes are not allowed to be used
+  # - ./hostpath-scc.yaml
+
+configMapGenerator:
+- name: kubeflow-config
+  namespace: kubeflow
+  envs:
+  # Copy from ../../../openshift/openshiftstack/config/params.env
+  - params.env
+# We need to define vars at the top level otherwise we will get
+# conflicts.
+vars:
+- fieldref:
+    fieldPath: data.clusterDomain
+  name: clusterDomain
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: kubeflow-config
+- fieldref:
+    fieldPath: metadata.namespace
+  name: namespace
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: kubeflow-config
+
+# Rebuilt profile controller image for KF 1.3
+images:
+- name: public.ecr.aws/j1r0q0g6/notebooks/profile-controller
+  newName: quay.io/kubeflow/profile-controller
+  newTag: v0.12.0

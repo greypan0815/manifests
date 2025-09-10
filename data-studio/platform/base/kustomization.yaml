@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+- includeSelectors: true
+  pairs:
+    DataStudio.version: "0.9"
+
+resources:
+- ../../kubeflow
+
+# Data Studio 基礎組件
+- ../../components/data-studio/base
+
+# 管理員權限相關配置（包括角色、集群角色和綁定）
+- ../../components/data-studio-admin/base
+
+# API 服務器（包括服務帳戶、部署設置和服務）
+- ../../components/api-server/base
+
+# 產品 GUI 組件（包括各個產品應用程序的部署）
+- ../../components/product-gui/data-studio/base
+
+# 配置映射同步操作器的生產環境配置
+- ../../components/cm-sync-operator/overlays/prod
+
+#  add product ui on side menubar
+patches:
+- path: ./patches/configmap_centraldashboard-config.yaml

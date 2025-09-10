@@ -1,0 +1,71 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: datastudio-image-puller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:image-puller
+subjects:
+
+- kind: ServiceAccount
+  name: cert-manager
+  namespace: cert-manager
+- kind: ServiceAccount
+  name: cert-manager-cainjector
+  namespace: cert-manager
+- kind: ServiceAccount
+  name: cert-manager-webhook
+  namespace: cert-manager
+
+- kind: ServiceAccount
+  name: cluster-local-gateway-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-ingressgateway-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istiod
+  namespace: istio-system
+- kind: ServiceAccount
+  name: authservice
+  namespace: istio-system
+
+- kind: ServiceAccount
+  name: dex
+  namespace: auth
+
+- kind: ServiceAccount
+  name: controller
+  namespace: knative-serving
+
+- kind: ServiceAccount
+  name: tekton-pipelineloop-controller
+  namespace: tekton-pipelines
+- kind: ServiceAccount
+  name: tekton-pipelineloop-webhook
+  namespace: tekton-pipelines
+- kind: ServiceAccount
+  name: tekton-pipelines-controller
+  namespace: tekton-pipelines
+- kind: ServiceAccount
+  name: tekton-pipelines-webhook
+  namespace: tekton-pipelines
+
+- kind: ServiceAccount
+  name: tekton-pipelines-resolvers
+  namespace: tekton-pipelines-resolvers
+
+- kind: ServiceAccount
+  name: istio-cni
+  namespace: kube-system
+
+- kind: ServiceAccount
+  name: eventing-controller
+  namespace: knative-eventing
+- kind: ServiceAccount
+  name: eventing-webhook
+  namespace: knative-eventing
+- kind: ServiceAccount
+  name: pingsource-mt-adapter
+  namespace: knative-eventing

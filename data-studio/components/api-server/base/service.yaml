@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: data-studio-api-server
+    dataStudio: api-server
+  name: data-studio-api-server
+  namespace: kubeflow
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: data-studio-api-server

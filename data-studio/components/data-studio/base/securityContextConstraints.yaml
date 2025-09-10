@@ -1,0 +1,32 @@
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+allowHostDirVolumePlugin: true
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: false
+allowedCapabilities: null
+defaultAddCapabilities: null
+fsGroup:
+  type: RunAsAny
+groups: ['*']
+metadata:
+  name: datastudio-anyuid
+priority: 10
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+- MKNOD
+runAsUser:
+  type: RunAsAny
+  # type: MustRunAsRange
+  # uidRangeMax: 1000
+  # uidRangeMin: 1000
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:demo:default-editor
+volumes: ['*']

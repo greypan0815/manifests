@@ -1,0 +1,29 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: beaver-synchronizer-get-clusterrole
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["list", "watch", "get", "patch"]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["list", "watch"]
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: beaver-synchronizer-create-clusterrole
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["list", "watch", "get", "create", "patch", "update"]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["list", "watch"]

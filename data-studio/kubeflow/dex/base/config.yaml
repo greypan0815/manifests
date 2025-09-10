@@ -1,0 +1,30 @@
+issuer: http://istio-ingressgateway-istio-system.apps-crc.testing/dex
+connectors:
+- type: openshift
+  id: openshift
+  name: OpenShiftAccount
+  config:
+    issuer: https://api.crc.testing:6443
+    clientID: system:serviceaccount:kubeflow:default
+    clientSecret: eyJhbGciOiJSUzI1NiIsImtpZCI6IksyaXotbV9TRWZQbENYeWFUXzBaWEVscndSMmJfRmt4dDdJalc1YWUycTQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlZmxvdyIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkZWZhdWx0LXRva2VuLWRtODVzIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRlZmF1bHQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiIzYjk2OTcyYi04MjFjLTQ4MDctODE4MC0xN2UzZDAyMGNhNTAiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZWZsb3c6ZGVmYXVsdCJ9.mQjUr5H0gXBNDlCPwjssaxN2cZU2vysl3UrLKVyAqjuL9YeA5dpm3H67L7zqZ_e06zZ3l3WcCl5uSAr_AE_NmWsBYSGCU6u_VcjcfdGn6OSF8UFuFN4E67Ap6VDcOegiS3r4qj6vuXlffvTtqANVHyc63WlLEoOdHV4viwbO-qUiB34c5pn4mwxXHXkMTufOtYZZ4gzNEV0RfZwIa-pzxXwsy3nuXUB7qXgqmYjylADeqQy8VP1t6qKUS52BR-m3NEp9WTyFvIPhLcCRONSZFMIg-uh3p7QDhxk7PFeoHTEpQiBpKxO6uziDWq6yvFSVZhixRol63A8v_RkY9HMoqKECUXZ1_YdGyDgYZ1N5LQt80G6Hzx_qXjgt5nLjD16KYdfO9Yi4RKVibqoTliZCLEeSkTa_BSuZs19IZ-W6vs90Yk2hU4kKjxmCao0ZsK1ia5rckV1AMOZ0vhj8D2-AusdexdT_LtgymCKPPWUuTst-PPBuw7xi0Io7zVvCu-ru-TWycyQ4ND4r9w38obg6gFSA5JHFoBpoEO_jJ6NYx2z8-bpJYr3i2haF6rD0_pnEkFTL1pG95j0BRmFyEnDHJ5nqT5PIJJ1VZrmLlnpob_avvJSSdG22G7MmG0-X72siauO4-POvV2ySnfsED0bHtxALetnvp-ckm6K6M9DfcLI
+    redirectURI: http://istio-ingressgateway-istio-system.apps-crc.testing/dex/callback
+    insecureCA: true
+storage:
+  type: kubernetes
+  config:
+    inCluster: true
+web:
+  http: 0.0.0.0:5556
+logger:
+  level: "debug"
+  format: text
+oauth2:
+  skipApprovalScreen: true
+enablePasswordDB: false
+staticPasswords: []
+staticClients:
+# https://github.com/dexidp/dex/pull/1664
+- idEnv: OIDC_CLIENT_ID
+  redirectURIs: ["/authservice/oidc/callback"]
+  name: 'Dex Login Application'
+  secretEnv: OIDC_CLIENT_SECRET

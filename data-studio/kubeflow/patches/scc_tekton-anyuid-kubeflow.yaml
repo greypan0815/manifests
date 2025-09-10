@@ -1,0 +1,17 @@
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: tekton-anyuid-$(NAMESPACE)
+users:
+- system:serviceaccount:$(TEKTON-NAMESPACE):tekton-pipelines-controller
+- system:serviceaccount:$(TEKTON-NAMESPACE):tekton-pipelines-webhook
+- system:serviceaccount:$(TEKTON-NAMESPACE):tekton-pipelineloop-controller
+- system:serviceaccount:$(TEKTON-NAMESPACE):tekton-pipelineloop-webhook
+- system:serviceaccount:kubeflow:kfp-csi-s3
+# add service account: kfp-csi-attacher, kfp-csi-provisioner
+# remove service account: csi-attacher, csi-provisioner
+- system:serviceaccount:kubeflow:kfp-csi-attacher
+- system:serviceaccount:kubeflow:kfp-csi-provisioner
+- system:serviceaccount:kubeflow:pipeline-runner
+seccompProfiles:
+- runtime/default

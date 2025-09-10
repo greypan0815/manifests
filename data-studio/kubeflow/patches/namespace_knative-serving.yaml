@@ -1,0 +1,5 @@
+# label knative-serving namespace istio-injected=disabled
+- op: replace
+  path: "/metadata/labels/istio-injection" 
+  value:
+    disabled

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: data-studio-api-server
+    dataStudio: api-server
+  name: data-studio-api-server
+  namespace: kubeflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-studio-api-server
+  template:
+    metadata:
+      labels:
+        app: data-studio-api-server
+    spec:
+      containers:
+      - image: 404906229455.dkr.ecr.ap-northeast-1.amazonaws.com/data-studio/api-server:a537a1a
+        name: api-server
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+      securityContext: {}
+      serviceAccount: data-studio-api-server
+      serviceAccountName: data-studio-api-server

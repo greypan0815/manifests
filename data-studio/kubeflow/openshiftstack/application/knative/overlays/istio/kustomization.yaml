@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+  - ../../../../../../../openshift/openshiftstack/application/knative/base/
+resources:
+  - ../../../../../../../common/istio-1-16/cluster-local-gateway/base

@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: data-studio-ui-runner
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: automlab-web-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: automlab-web-app
+  template:
+    metadata:
+      labels:
+        app: automlab-web-app
+    spec:
+      containers:
+      - name: automlab-ui
+        image: 404906229455.dkr.ecr.ap-northeast-1.amazonaws.com/product-gui-automlab:1dfd26e
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080      
+          protocol: TCP
+        env:
+        - name: APP_SECRET_KEY
+          value: "3a0a583c97218bfee6c9e902eea29efcb8667ac0d9a1d92c7bfff76a18534c8a"
+        - name: APP_PREFIX
+          value: /aml # 這個值不要亂改，會壞掉，前後端都會採用同一個 PREFIX
+        - name: USERID_HEADER
+          value: kubeflow-userid
+        - name: APP_SECURE_COOKIES
+          value: "false"  # 測試環境如果不支援 https 就設定為 false
+        - name: USERID_PREFIX
+          value: 
+        - name: DOC_API_HOST
+          value: http://data-studio-api-server.kubeflow.svc.cluster.local
+        - name: DOC_API_NAMESPACE
+          value: kubeflow-user # 產品預設, 可以改; KF預設為: "kubeflow-user"
+        - name: DOC_API_PRODUCT_NAME # required
+          value: aml
+        - name: DS_DEPLOYMENT
+          value: "true"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          failureThreshold: 2
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 15
+          failureThreshold: 3
+          periodSeconds: 10
+      serviceAccountName: data-studio-ui-runner

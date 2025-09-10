@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: whale-web-app-service
+spec:
+  ports:
+  - name: http-whale-ui
+    port: 80
+    targetPort: 8080
+  selector:
+    app: whale-web-app
+  type: ClusterIP

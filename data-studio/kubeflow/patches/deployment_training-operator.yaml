@@ -1,0 +1,12 @@
+- op: replace
+  path: "/spec/template/spec/containers/0/resources" 
+  value:
+    limits:
+      cpu: 100m
+      memory: 100Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+- op: replace
+  path: "/spec/template/spec/containers/0/livenessProbe/initialDelaySeconds" 
+  value: 25

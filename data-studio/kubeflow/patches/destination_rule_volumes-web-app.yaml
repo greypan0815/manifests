@@ -1,0 +1,4 @@
+- op: replace
+  path: "/spec/trafficPolicy/tls" 
+  value:
+    mode: DISABLE
