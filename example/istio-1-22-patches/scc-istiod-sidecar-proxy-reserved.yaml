@@ -1,0 +1,76 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: istiod
+    created-by: data-studio
+  name: istiod-sidecar-proxy-reserved
+rules:
+  - apiGroups:
+      - security.openshift.io
+    resourceNames:
+      - istiod-sidecar-proxy-reserved
+    resources:
+      - securitycontextconstraints
+    verbs:
+      - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: istiod
+    created-by: data-studio
+  name: istiod-sidecar-proxy-reserved
+  namespace: istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istiod-sidecar-proxy-reserved
+subjects:
+  - kind: ServiceAccount
+    name: istiod
+    namespace: istio-system
+  - kind: ServiceAccount
+    name: istio-ingressgateway-service-account
+    namespace: istio-system
+  - kind: ServiceAccount
+    name: cluster-local-gateway-service-account
+    namespace: istio-system
+---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  labels:
+    app: istiod
+    created-by: data-studio
+  name: istiod-sidecar-proxy-reserved
+allowPrivilegedContainer: false
+allowPrivilegeEscalation: true
+allowedCapabilities:
+  - NET_ADMIN
+  - NET_RAW
+readOnlyRootFilesystem: false
+seLinuxContext:
+  type: RunAsAny
+runAsUser:
+  type: RunAsAny
+  # type: MustRunAs
+  # uid: 1337
+fsGroup:
+  type: RunAsAny
+  # type: MustRunAs
+  # ranges:
+  #   - min: 1337
+  #     max: 1337
+volumes:
+  - configMap
+  - downwardAPI
+  - emptyDir
+  - projected
+  - secret
+users:
+  - system:serviceaccount:istio-system:istio-ingressgateway-service-account
+  - system:serviceaccount:istio-system:istiod
+  - system:serviceaccount:istio-system:cluster-local-gateway-service-account
+  - system:serviceaccount:kubeflow:centraldashboard

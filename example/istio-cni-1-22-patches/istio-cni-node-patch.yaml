@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: istio-cni-node
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      volumes:
+      - name: cni-net-dir
+        hostPath:
+          path: /etc/kubernetes/cni/net.d
+      - name: cni-bin-dir
+        hostPath:
+          path: /var/lib/cni/bin
+      containers:
+      - name: install-cni
+        volumeMounts:
+        - name: cni-net-dir
+          mountPath: /host/etc/kubernetes/cni/net.d
+        - name: cni-bin-dir
+          mountPath: /host/opt/cni/bin
+        env:
+        - name: CNI_NET_DIR
+          value: /etc/kubernetes/cni/net.d
+        - name: MOUNTED_CNI_NET_DIR
+          value: /host/etc/kubernetes/cni/net.d
+        - name: CNI_CONF_NAME
+          value: 00-multus.conf
+        - name: REPAIR_DELETE_PODS
+          value: "true"

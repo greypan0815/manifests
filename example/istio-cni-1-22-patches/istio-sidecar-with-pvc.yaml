@@ -1,0 +1,37 @@
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  labels:
+    app: istiod
+    created-by: data-studio
+  name: istio-sidecar-with-pvc
+priority: 20
+allowPrivilegedContainer: false
+allowPrivilegeEscalation: true
+allowedCapabilities:
+  - NET_ADMIN
+  - NET_RAW
+readOnlyRootFilesystem: false
+seLinuxContext:
+  type: RunAsAny
+runAsUser:
+  type: RunAsAny
+fsGroup:
+  type: RunAsAny
+supplementalGroups:
+  type: RunAsAny
+seccompProfiles:
+  - '*'
+volumes:
+  - configMap
+  - downwardAPI
+  - emptyDir
+  - projected
+  - secret
+  - persistentVolumeClaim
+users:
+  - system:serviceaccount:istio-system:istio-ingressgateway-service-account
+  - system:serviceaccount:istio-system:istiod
+  - system:serviceaccount:istio-system:cluster-local-gateway-service-account
+  - system:serviceaccount:kubeflow:centraldashboard
+  - system:serviceaccount:kubeflow:minio-sa
