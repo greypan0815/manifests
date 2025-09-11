@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: use-istio-sidecar-with-pvc-for-minio
+  name: minio-sa-anyuid
   namespace: kubeflow
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: system:openshift:scc:istio-sidecar-with-pvc
+  name: system:openshift:scc:anyuid
 subjects:
 - kind: ServiceAccount
   name: minio-sa
